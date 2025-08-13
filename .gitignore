@@ -1,2 +1,5 @@
-.venv
+api/
+__pycache__/
 .env
+docker-compose.yml
+Dockerfile

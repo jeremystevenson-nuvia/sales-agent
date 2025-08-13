@@ -1,0 +1,9 @@
+# MySQL (remote)
+MYSQL_USER=Jeremy
+MYSQL_PASSWORD=Nuvia2025
+MYSQL_HOST=nuvia.app
+MYSQL_DB=highlevel
+
+# MongoDB (local compose)
+MONGO_URI=mongodb://mongo:27017
+MONGO_DB=salesdb
