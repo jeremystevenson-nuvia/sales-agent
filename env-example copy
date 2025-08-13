@@ -1,0 +1,9 @@
+# MySQL (remote)
+MYSQL_USER=
+MYSQL_PASSWORD=
+MYSQL_HOST=
+MYSQL_DB=
+
+# MongoDB (local compose)
+MONGO_URI=
+MONGO_DB=

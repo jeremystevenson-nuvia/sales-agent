@@ -37,6 +37,7 @@ async def receive_webhook(payload: WebhookPayload, session: AsyncSession = Depen
 	)
 	items = result.scalars().all()
 	serialized_items: List[Dict[str, Any]] = [sa_to_dict(i) for i in items]
+	
 	return {
 		"contactId": contact_id,
 		"count": len(serialized_items),
