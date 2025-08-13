@@ -6,13 +6,16 @@ services:
     container_name: sales-agent-app
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
-      - MYSQL_USER=Jeremy
-      - MYSQL_PASSWORD=Nuvia2025
-      - MYSQL_HOST=nuvia.app
-      - MYSQL_DB=highlevel
-      - MONGO_URI=mongodb://mongo:27017
-      - MONGO_DB=salesdb
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_DB=${MYSQL_DB}
+      - MONGO_URI=${MONGO_URI}
+      - MONGO_DB=${MONGO_DB}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       - mongo
     volumes:
@@ -23,9 +26,11 @@ services:
     image: mysql:8.0
     container_name: sales-agent-mysql
     restart: always
+    env_file:
+      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: salesdb
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DB}
     ports:
       - "3306:3306"
     volumes:

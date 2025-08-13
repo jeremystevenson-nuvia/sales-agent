@@ -10,3 +10,5 @@ beanie
 httpx
 python-dotenv
 email-validator
+langchain-openai
+langchain-core

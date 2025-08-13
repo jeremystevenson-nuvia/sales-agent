@@ -1,9 +1,12 @@
-# MySQL (remote)
+# MySQL
 MYSQL_USER=
 MYSQL_PASSWORD=
 MYSQL_HOST=
 MYSQL_DB=
 
-# MongoDB (local compose)
+# MongoDB
 MONGO_URI=
 MONGO_DB=
+
+# OpenAI
+OPENAI_API_KEY=

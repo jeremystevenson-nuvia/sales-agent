@@ -8,6 +8,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./core ./core
+COPY ./ai ./ai
 COPY ./tests ./tests
 COPY ./README.md ./
 

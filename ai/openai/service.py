@@ -1,3 +1,4 @@
+import os
 from ai.core.model import AIOutput, AISettings
 from langchain_openai import ChatOpenAI
 from typing import List, Optional, Union
@@ -11,19 +12,23 @@ class OpenAI:
 
 
     def initialize(self):
+        # Ensure API key is picked up from env
+        api_key = os.getenv("OPENAI_API_KEY")
         if self.ai_settings:
             self.llm = ChatOpenAI(
                 model=self.ai_settings.model_name,
                 temperature=self.ai_settings.temperature,
                 verbose=self.ai_settings.verbose,
-                use_responses_api=self.ai_settings.use_responses_api
+                use_responses_api=self.ai_settings.use_responses_api,
+                api_key=api_key
             )
         else:
             self.llm = ChatOpenAI(
                 model="gpt-4.1-mini",
                 temperature=0.5,
                 verbose=True,
-                use_responses_api=True
+                use_responses_api=True,
+                api_key=api_key
             )       
     
     def call(self,
