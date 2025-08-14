@@ -9,9 +9,9 @@ OPENAI_MAX_TOKENS = 1000  # Maximum tokens for responses
 OPENAI_TEMPERATURE = 0.5  # Response creativity (0.0 = deterministic, 1.0 = creative)
 
 # Document Processing Configuration
-CHUNK_SIZE = 1000  # Size of each training chunk in tokens
-CHUNK_OVERLAP = 200  # Overlap between chunks in tokens
-DOCS_DIRECTORY = "docs"  # Directory containing your documents
+CHUNK_SIZE = 300  # Size of each training chunk in tokens
+CHUNK_OVERLAP = 50  # Overlap between chunks in tokens
+DOCS_DIRECTORY = "finetune/docs"  # Directory containing your documents
 
 # Fine-tuning Configuration
 TRAINING_DATA_FILE = "fine_tuning_data.jsonl"  # Output file for training data

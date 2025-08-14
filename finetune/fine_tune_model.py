@@ -9,15 +9,15 @@ import json
 import glob
 from pathlib import Path
 from typing import List, Dict, Any
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from openai import OpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 import tiktoken
-import config
+from finetune import config
 
 # Load environment variables
-load_dotenv()
+# load_dotenv()
 
 class GPT4FineTuner:
     def __init__(self):
@@ -193,15 +193,3 @@ class GPT4FineTuner:
             print(f"Error in fine-tuning pipeline: {e}")
             raise
 
-def main():
-    """Main function to run the fine-tuning process"""
-    try:
-        fine_tuner = GPT4FineTuner()
-        fine_tuner.run_fine_tuning_pipeline()
-    except Exception as e:
-        print(f"Failed to run fine-tuning: {e}")
-        return 1
-    return 0
-
-if __name__ == "__main__":
-    exit(main())

@@ -25,7 +25,8 @@ class OpenAI:
             )
         else:
             self.llm = ChatOpenAI(
-                model="gpt-4.1-mini", #TODO put fine tuned model id here
+                # model="gpt-4.1-mini", #TODO put fine tuned model id here
+                model="ft:gpt-4.1-2025-04-14:glo3d-com::C4aUceP4", 
                 temperature=0.5,
                 verbose=True,
                 use_responses_api=True,
