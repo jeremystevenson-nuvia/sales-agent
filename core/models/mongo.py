@@ -17,6 +17,7 @@ class Goal(BaseModel):
 class Agent(Document):
     name: str
     type: str
+    contact_type: Optional[str] = None
     rules: List[Rule] = Field(default_factory=list)
     goals: List[Goal] = Field(default_factory=list)
     behavior: Optional[str] = None

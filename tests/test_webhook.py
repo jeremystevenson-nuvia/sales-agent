@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from types import SimpleNamespace
+from unittest.mock import patch, AsyncMock
 
 from core.api.main import app
 from core.api.v1 import webhook as webhook_module
@@ -45,11 +46,17 @@ app.dependency_overrides[webhook_module.get_session] = fake_get_session
 client = TestClient(app)
 
 
-def test_webhook_returns_touchpoints_by_contact():
-	payload = {"contactId": "c1", "message": "hello"}
-	resp = client.post("/v1/webhook/", json=payload)
-	assert resp.status_code == 200
-	data = resp.json()
-	assert data["contactId"] == "c1"
-	assert data["count"] == 1
-	assert isinstance(data["items"], list) and len(data["items"]) == 1
+@patch('core.api.v1.webhook.Agent')
+def test_webhook_returns_touchpoints_by_contact(mock_agent):
+    # Mock the Agent.find_one to return a fake agent
+    mock_agent_instance = SimpleNamespace()
+    mock_agent_instance.id = "agent_123"
+    mock_agent.find_one = AsyncMock(return_value=mock_agent_instance)
+    
+    payload = {"contactId": "c1", "type": "sms", "message": "hello"}
+    resp = client.post("/v1/webhook/", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["contactId"] == "c1"
+    assert "responseId" in data
+    assert "responseMessage" in data

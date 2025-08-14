@@ -1,5 +1,6 @@
 import os
-from ai.core.model import AIOutput, AISettings
+from ai.core.model import AISettings
+from core.models.base import AIOutput
 from langchain_openai import ChatOpenAI
 from typing import List, Optional, Union
 from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, AIMessage
@@ -24,7 +25,7 @@ class OpenAI:
             )
         else:
             self.llm = ChatOpenAI(
-                model="gpt-4.1-mini",
+                model="gpt-4.1-mini", #TODO put fine tuned model id here
                 temperature=0.5,
                 verbose=True,
                 use_responses_api=True,
@@ -35,7 +36,6 @@ class OpenAI:
              messages: List[BaseMessage],
              response_id: Optional[str] = None
         ) -> AIOutput:
-        
         try:
             if messages:
                 response = self.llm.invoke(messages, previous_response_id=response_id)
@@ -43,13 +43,13 @@ class OpenAI:
                     response_id = response.response_metadata.get("id")
                     response_text = response.text()
                     total_tokens = int(response.usage_metadata.get('total_tokens', 0))
-                    # if env == 'test':
-                    #     print(f'Messages: {messages}')
-                    #     print(f'Response: {response}')
-                    return AIOutput(response_text, response_id, total_tokens)
-            return AIOutput('', '', 0, errorMessage='No messages provided')
+                    return AIOutput(
+                        response_text = response_text, 
+                        response_id = response_id,
+                        total_token = total_tokens)
+            return AIOutput(error_message='No messages provided')
         except Exception as e:
-            return AIOutput('', '', 0, errorMessage=str(e))
+            return AIOutput(error_message=str(e))
 
     
         

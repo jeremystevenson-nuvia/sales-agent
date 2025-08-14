@@ -1,2 +1,0 @@
-1. read agent object from db
-2. update ai memory from last conversation or new data
