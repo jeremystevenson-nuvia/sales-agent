@@ -20,12 +20,13 @@ def _create_format_instructions():
 def answer_question(input: AIInput) -> AIOutput:
     try:
         client = AIClient(input)
-        # Simplified response for now
+        client.call()
         return AIOutput(
-            response_message="Hello! I'm following up regarding your previous request. How can I assist you further today?",
-            appointment=0,
-            next_step="Follow up",
-            summary="Conversation summary"
+            response_id=client.response_id,
+            response_message=client.response_message or "No response message available",
+            appointment=0 or "No appointment available",
+            next_step=client.next_step or "No next step available",
+            summary=client.summary or "No summary available"
         )
     except Exception as e:
         error_message = f"Sorry, I'm not sure what you mean. Please try again. Error: {e}"

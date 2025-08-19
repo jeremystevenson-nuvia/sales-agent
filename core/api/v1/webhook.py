@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Literal
 import os
 
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException, Body, Header
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, constr
@@ -10,7 +10,9 @@ from core.db.mysql import AsyncSessionLocal
 from core.models.base import AIInput, ContactInfo
 from core.models.highlevel import IsrLeadTouchpoint
 from ai.chats.service import answer_question
-from core.models.mongo import Agent
+from core.models.mongo import Agent, Conversation, Metrics
+from ai.openai.service import OpenAI
+from langchain_core.messages import HumanMessage
 
 
 router = APIRouter()
@@ -66,7 +68,16 @@ class WebhookPayload(BaseModel):
 				}
 			}
 		}
-	}
+	},
+	summary="Webhook endpoint with API token authentication.",
+	description="""
+**Authentication Required**: Set the `X-API-Token` header to access this endpoint.
+
+**Test Token:**
+```
+X-API-Token: ZLiNX9XdhCYxThYFGcl0mDGnwhDR1VWwFTSXN1ju5nw
+```
+"""
 )
 async def receive_webhook(
 	payload: WebhookPayload = Body(
@@ -83,8 +94,14 @@ async def receive_webhook(
 		},
 	),
 	session: AsyncSession = Depends(get_session),
+	x_api_token: str = Header(None, alias="X-API-Token")
 ) -> Dict[str, Any]:
+	# API Token Authentication
+	api_token_env = os.getenv("API_TOKEN")
+	if not x_api_token or x_api_token != api_token_env:
+		raise HTTPException(status_code=401, detail="Invalid or missing API token.")
 	# Defensive validation (Pydantic enforces too; this returns 400 with a clear message)
+	
 	invalid_fields: List[str] = []
 	if not payload.contactId or not payload.contactId.strip():
 		invalid_fields.append("contactId")
@@ -97,36 +114,80 @@ async def receive_webhook(
 			"message": "Invalid or empty fields",
 			"fields": invalid_fields,
 		})
+	
 	contact_id = payload.contactId
+	message = payload.message
+
+	# After fetching serialized_items
+	conversation = await Conversation.find_one({"contact_id": contact_id})
+	response_id = conversation.response_id if conversation and conversation.response_id else None
+
+
 	#if response id available we don't need to call db
-	result = await session.execute(
+	serialized_items = []
+	if not response_id:
+		result = await session.execute(
 		select(IsrLeadTouchpoint)
 		.where(IsrLeadTouchpoint.contactId == contact_id)
 		.order_by(IsrLeadTouchpoint.dateAdded.desc())
-	)
-	items = result.scalars().all()
-	serialized_items: List[Dict[str, Any]] = [sa_to_dict(i) for i in items]
- 
+		)
+		items = result.scalars().all()
+		serialized_items: List[Dict[str, Any]] = [sa_to_dict(i) for i in items]
+	
 	# Select agent matching the contact type
 	agent = await Agent.find_one({"contact_type": payload.type})
 	selected_agent_id = str(agent.id) if agent else "agent_1"
 
 	#Inputs
-	ai_input = AIInput(
-		contact_id=contact_id,
-		agent_id=selected_agent_id,
-		contact_info=ContactInfo(name="John Doe", email="john@example.com", phone="123-456-7890"),
-		message=payload.message,
-		data=serialized_items
-	)
+	# ai_input = AIInput(
+	# 	contact_id=contact_id,
+	# 	agent_id=selected_agent_id,
+	# 	contact_info=ContactInfo(name="John Doe", email="john@example.com", phone="123-456-7890"),
+	# 	message=message,
+	# 	data=serialized_items
+	# )
+
+	# Build content from all 'context' fields in serialized_items, then add the message
+	if serialized_items:
+		context_list = [HumanMessage(content=item.get('context', '')) for item in serialized_items if item.get('context')]
+		context_list.append(HumanMessage(content=message))
+	else:
+		context_list = [HumanMessage(content=message)]
 	
-	response = answer_question(ai_input)
+	print(context_list, "context_list")
+	print(response_id, "response_id")
+
+	openai = OpenAI()
+	response = openai.call(
+		messages=context_list,
+		response_id=response_id or None
+	)
+	response.response_message = response.response_text or "No response message generated."
+
+	# Save all relevant fields in Conversation collection
+	if conversation:
+		conversation.last_response = response.response_message
+		conversation.response_id = response.response_id
+		conversation.total_token = response.total_token if hasattr(response, 'total_token') else None
+		conversation.metrics = None
+		conversation.set_appointment = bool(response.appointment) if response.appointment is not None else False
+		await conversation.save()
+	else:
+		conversation = Conversation(
+			contact_id=contact_id,
+			last_response=response.response_message,
+			response_id=response.response_id,
+			total_token=response.total_token if hasattr(response, 'total_token') else None,
+			metrics=None,
+			set_appointment=bool(response.appointment) if response.appointment is not None else False,
+		)
+		await conversation.insert()
 
 	return {
 		"contactId": contact_id,
 		"responseId": response.response_id,
 		"responseMessage": response.response_message,
-		"appointment": response.appointment,
-		"nextStep": response.next_step,
-		"summary": response.summary,
+		"appointment": response.appointment or 0,
+		"nextStep": response.next_step or "",
+		"summary": response.summary or ""
 	}
