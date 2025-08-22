@@ -10,9 +10,9 @@ from core.db.mysql import AsyncSessionLocal
 from core.models.base import AIInput, ContactInfo
 from core.models.highlevel import IsrLeadTouchpoint
 from ai.chats.service import answer_question
-from core.models.mongo import Agent, Conversation, Metrics
-from ai.openai.service import OpenAI
-from langchain_core.messages import HumanMessage
+from core.models.mongo import Conversation
+
+
 
 
 router = APIRouter()
@@ -133,36 +133,16 @@ async def receive_webhook(
 		)
 		items = result.scalars().all()
 		serialized_items: List[Dict[str, Any]] = [sa_to_dict(i) for i in items]
-	
-	# Select agent matching the contact type
-	agent = await Agent.find_one({"contact_type": payload.type})
-	selected_agent_id = str(agent.id) if agent else "agent_1"
-
-	#Inputs
-	# ai_input = AIInput(
-	# 	contact_id=contact_id,
-	# 	agent_id=selected_agent_id,
-	# 	contact_info=ContactInfo(name="John Doe", email="john@example.com", phone="123-456-7890"),
-	# 	message=message,
-	# 	data=serialized_items
-	# )
-
-	# Build content from all 'context' fields in serialized_items, then add the message
-	if serialized_items:
-		context_list = [HumanMessage(content=item.get('context', '')) for item in serialized_items if item.get('context')]
-		context_list.append(HumanMessage(content=message))
-	else:
-		context_list = [HumanMessage(content=message)]
-	
-	print(context_list, "context_list")
-	print(response_id, "response_id")
-
-	openai = OpenAI()
-	response = openai.call(
-		messages=context_list,
-		response_id=response_id or None
+		
+	# Inputs
+	ai_input = AIInput(
+		contact_id=contact_id,
+		agent_id='agent_1',
+		contact_info=ContactInfo(name="John Doe", email="john@example.com", phone="123-456-7890"),
+		message=message,
+		data=serialized_items
 	)
-	response.response_message = response.response_text or "No response message generated."
+	response = answer_question(ai_input)
 
 	# Save all relevant fields in Conversation collection
 	if conversation:

@@ -19,6 +19,7 @@ class ContactInfo(BaseModel):
 class AIInput(BaseModel):
     contact_id: str
     agent_id: str
+    response_id: str
     contact_info: ContactInfo
     message: str
     data: List[SerializedItem]

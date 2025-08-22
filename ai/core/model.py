@@ -10,14 +10,3 @@ class AISettings:
 	use_responses_api: bool = True
 
 
-# @dataclass
-# class AIOutput:
-# 	text: str
-# 	response_id: str
-# 	total_tokens: int
-# 	errorMessage: Optional[str] = None
-
-# @dataclass
-# class ChatbotSession:
-#     contact_id: str
-#     agent_id: str

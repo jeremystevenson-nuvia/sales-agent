@@ -5,7 +5,7 @@ class AgentManager:
     def __init__(self, agent_id):
         self.agent_id = agent_id
         self.agent_goals:str = None
-        self.agent = self._load_agent()
+        self.agent = self._static_agent() #TODO load from db
         
 
     def _get_agent_goals_str(self, goals_list:list[Goal] = None) -> str:
@@ -16,7 +16,6 @@ class AgentManager:
                 if item.title:
                     goals += f"{item.order}. [{item.title}]: {item.description}\n"
         return goals
-
 
     def _load_agent(self) -> AIAgent:
         try:
@@ -69,7 +68,6 @@ class AgentManager:
         except Exception as e:
             print(f'Error in agent_id:{self.agent_id} error is: {e}')
             return None    
-    
     
     def is_agent_profile_exists(self, contact_id) -> bool:
         # Check flag at path conversation/contact_id/agents/agent_id/isLoaded
@@ -145,3 +143,15 @@ class AgentManager:
                 return bool(asyncio.run(_set_flag()))
         except Exception:
             return False
+        
+    def _static_agent(self) -> AIAgent:
+        return AIAgent(
+            id='agent_1',
+            name='Elena Marlowe',
+            description='Assistant at Nuvia Dental Implant Center',
+            rules='',
+            agent_type='assistant',
+            goals_str='',
+            behavior='Calm and patient, always offering suggestions and guidance to the user.',
+        )
+    
