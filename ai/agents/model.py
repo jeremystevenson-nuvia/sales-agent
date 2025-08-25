@@ -13,9 +13,9 @@ class Goal(BaseModel):
     description: Optional[str] = Field(default=None, description="Detailed description of the goal.")
 
     class Config:
-        orm_mode = True
-        anystr_strip_whitespace = True
-        schema_extra = {
+        from_attributes = True
+        str_strip_whitespace = True
+        json_schema_extra = {
             "example": {
                 "id": "goal-001",
                 "order": 1,
@@ -40,9 +40,9 @@ class AIAgent(BaseModel):
     agent_type: Optional[str] = Field(default=None, description="Type of AI agent.")
 
     class Config:
-        orm_mode = True
-        anystr_strip_whitespace = True
-        schema_extra = {
+        from_attributes = True
+        str_strip_whitespace = True
+        json_schema_extra = {
             "example": {
                 "id": "agent-001",
                 "name": "Sales Assistant",

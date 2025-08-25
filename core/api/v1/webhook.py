@@ -33,7 +33,7 @@ class WebhookPayload(BaseModel):
 	message: constr(strip_whitespace=True, min_length=1)
 
 	class Config:
-		schema_extra = {
+		json_schema_extra = {
 			"example": {
 				"contactId": "****7MC2QjPkIuGt****",
 				"type": "sms",
@@ -138,6 +138,7 @@ async def receive_webhook(
 	ai_input = AIInput(
 		contact_id=contact_id,
 		agent_id='agent_1',
+		response_id=response_id or "",
 		contact_info=ContactInfo(name="John Doe", email="john@example.com", phone="123-456-7890"),
 		message=message,
 		data=serialized_items
